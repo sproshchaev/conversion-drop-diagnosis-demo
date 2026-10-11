@@ -35,6 +35,12 @@ SEGMENTS = {
     },
 }
 
+# sessions by traffic source (UTM), totals match SEGMENTS
+SOURCES = {
+    "tue": {"direct": 45000, "search": 40000, "other": 25000, "telegram": 0},
+    "wed": {"direct": 45500, "search": 40300, "other": 25200, "telegram": 19000},
+}
+
 # orders on iOS 5.2 that never reach analytics, per user type
 LOST_EVENTS = {("ios", "new"): 53, ("ios", "returning"): 350}
 
@@ -78,7 +84,9 @@ def build():
             orders.append([order_id, paid_at, platform, version, user_type])
             if i not in lost:
                 events.append([order_id, paid_at, platform, user_type])
+    by_source = [[DAYS[d], src, n] for d in DAYS for src, n in SOURCES[d].items()]
     return {
+        "sessions_by_source.csv": (["date", "source", "sessions"], by_source),
         "sessions.csv": (["date", "platform", "user_type", "sessions"], sessions),
         "billing_orders.csv": (["order_id", "paid_at", "platform", "app_version",
                                 "user_type"], orders),

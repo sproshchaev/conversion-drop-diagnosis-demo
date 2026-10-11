@@ -14,17 +14,20 @@ android, returning      20 000      900   4.50%    20 200      929   4.60%
 ios, new                 8 000      160   2.00%     9 000      136   1.51%
 ios, returning          22 000    1 210   5.50%    22 300      899   4.03%
 
-Table 3. Paid orders in billing
-platform       tue     wed
-web          1 650   1 899
-android      1 050   1 201
-ios          1 370   1 438
-total        4 070   4 538
+Table 3. Paid orders in billing (user type is stored on the order)
+segment                  tue     wed
+web, new                 300     496
+web, returning         1 350   1 403
+android, new             150     272
+android, returning       900     929
+ios, new                 160     189
+ios, returning         1 210   1 249
+total                  4 070   4 538
 
 Step 1. Events vs billing, Wednesday
-  web      billing  1 899  events  1 899  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
-  android  billing  1 201  events  1 201  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
-  ios      billing  1 438  events  1 035  gap day  28.0%  before 06:00   0.0%  from 06:00  30.4%
+  web      billing  1 899  with event  1 899  dup 0  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
+  android  billing  1 201  with event  1 201  dup 0  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
+  ios      billing  1 438  with event  1 035  dup 0  gap day  28.0%  before 06:00   0.0%  from 06:00  30.4%
   ios by app version, Wednesday:
     5.1: billing 112  events 112  gap 0.0%
     5.2: billing 1 326  events 923  gap 30.4%
@@ -33,6 +36,11 @@ Step 2. Honest conversion on billing orders
   tue 3.70%  wed 3.49%  change -5.7%
   sessions +18.2%  billing orders +11.5%
   share of new users 34.5% -> 43.8%
+  sessions by source (UTM):
+    direct    tue  45 000  wed  45 500  delta     500
+    search    tue  40 000  wed  40 300  delta     300
+    other     tue  25 000  wed  25 200  delta     200
+    telegram  tue       0  wed  19 000  delta  19 000
 
 Step 3. Where the -0.52 pp came from
   dashboard           3.70% -> 3.18%  -0.52 pp

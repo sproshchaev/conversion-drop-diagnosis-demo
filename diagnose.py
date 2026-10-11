@@ -13,7 +13,7 @@ import sqlite3
 from pathlib import Path
 
 DATA = Path(__file__).parent / "data"
-TUE, WED = "2026-10-06", "2026-10-07"
+TUE, WED, THU = "2026-10-06", "2026-10-07", "2026-10-08"
 PLATFORMS = ["web", "android", "ios"]
 USER_TYPES = ["new", "returning"]
 
@@ -21,13 +21,15 @@ USER_TYPES = ["new", "returning"]
 # (date_trunc('hour', ...) becomes substr(..., 1, 13)).
 RECONCILE_SQL = """
 SELECT b.platform,
-       substr(b.paid_at, 1, 13)  AS hour,
-       count(*)                  AS orders_billing,
-       count(e.order_id)         AS purchase_events,
-       round(1 - count(e.order_id) * 1.0 / count(*), 3) AS gap
+       substr(b.paid_at, 1, 13)                        AS hour,
+       count(DISTINCT b.order_id)                      AS orders_billing,
+       count(DISTINCT e.order_id)                      AS orders_with_event,
+       count(e.order_id) - count(DISTINCT e.order_id)  AS duplicate_events,
+       round(1 - count(DISTINCT e.order_id) * 1.0
+                 / count(DISTINCT b.order_id), 3)      AS gap
 FROM billing_orders b
 LEFT JOIN purchase_events e ON e.order_id = b.order_id
-WHERE b.paid_at >= :since
+WHERE b.paid_at >= :day_start AND b.paid_at < :day_end
 GROUP BY 1, 2
 ORDER BY 1, 2
 """
@@ -35,7 +37,7 @@ ORDER BY 1, 2
 
 def load():
     db = sqlite3.connect(":memory:")
-    for name in ["sessions", "billing_orders", "purchase_events"]:
+    for name in ["sessions", "sessions_by_source", "billing_orders", "purchase_events"]:
         with open(DATA / f"{name}.csv", newline="") as f:
             rows = list(csv.reader(f))
         cols = ", ".join(rows[0])
@@ -103,36 +105,39 @@ def table_segments(c):
 
 
 def table_billing(c):
-    print("Table 3. Paid orders in billing")
-    print(f"{'platform':<10}{'tue':>8}{'wed':>8}")
-    for label, plats in [(p, [p]) for p in PLATFORMS] + [("total", PLATFORMS)]:
-        print(f"{label:<10}{num(agg(c, TUE, plats)[2]):>8}{num(agg(c, WED, plats)[2]):>8}")
+    print("Table 3. Paid orders in billing (user type is stored on the order)")
+    print(f"{'segment':<20}{'tue':>8}{'wed':>8}")
+    for p in PLATFORMS:
+        for u in USER_TYPES:
+            print(f"{p + ', ' + u:<20}{num(c[(TUE, p, u)][2]):>8}{num(c[(WED, p, u)][2]):>8}")
+    print(f"{'total':<20}{num(agg(c, TUE)[2]):>8}{num(agg(c, WED)[2]):>8}")
 
 
 def reconcile(db):
     print("Step 1. Events vs billing, Wednesday")
-    rows = db.execute(RECONCILE_SQL, {"since": WED}).fetchall()
+    rows = db.execute(RECONCILE_SQL, {"day_start": WED, "day_end": THU}).fetchall()
     for p in PLATFORMS:
         mine = [r for r in rows if r[0] == p]
         bill = sum(r[2] for r in mine)
         ev = sum(r[3] for r in mine)
         before = [r for r in mine if int(r[1][-2:]) < 6]
         after = [r for r in mine if int(r[1][-2:]) >= 6]
+        dup = sum(r[4] for r in mine)
         gb = 1 - sum(r[3] for r in before) / sum(r[2] for r in before)
         ga = 1 - sum(r[3] for r in after) / sum(r[2] for r in after)
-        print(f"  {p:<8} billing {num(bill):>6}  events {num(ev):>6}  "
+        print(f"  {p:<8} billing {num(bill):>6}  with event {num(ev):>6}  dup {dup}  "
               f"gap day {(1 - ev / bill) * 100:5.1f}%  "
               f"before 06:00 {gb * 100:5.1f}%  from 06:00 {ga * 100:5.1f}%")
     print("  ios by app version, Wednesday:")
     for v, b, e in db.execute(
             "SELECT b.app_version, count(*), count(e.order_id) FROM billing_orders b "
             "LEFT JOIN purchase_events e ON e.order_id = b.order_id "
-            "WHERE b.platform = 'ios' AND b.paid_at >= :since GROUP BY 1 ORDER BY 1",
-            {"since": WED}):
+            "WHERE b.platform = 'ios' AND b.paid_at >= :day_start AND b.paid_at < :day_end "
+            "GROUP BY 1 ORDER BY 1", {"day_start": WED, "day_end": THU}):
         print(f"    {v}: billing {num(b)}  events {num(e)}  gap {(1 - e / b) * 100:.1f}%")
 
 
-def honest(c):
+def honest(c, db):
     s1, e1, b1 = agg(c, TUE)
     s2, e2, b2 = agg(c, WED)
     print("Step 2. Honest conversion on billing orders")
@@ -141,6 +146,13 @@ def honest(c):
     n1 = agg(c, TUE, user_types=["new"])[0] / s1
     n2 = agg(c, WED, user_types=["new"])[0] / s2
     print(f"  share of new users {n1 * 100:.1f}% -> {n2 * 100:.1f}%")
+    print("  sessions by source (UTM):")
+    src = {}
+    for d, s, n in db.execute("SELECT date, source, sessions FROM sessions_by_source"):
+        src.setdefault(s, {})[d] = int(n)
+    for s, v in src.items():
+        print(f"    {s:<9} tue {num(v[TUE]):>7}  wed {num(v[WED]):>7}  "
+              f"delta {num(v[WED] - v[TUE]):>7}")
 
 
 def decompose(c):
@@ -172,7 +184,7 @@ def main():
         print()
     reconcile(db)
     print()
-    honest(c)
+    honest(c, db)
     print()
     decompose(c)
 
