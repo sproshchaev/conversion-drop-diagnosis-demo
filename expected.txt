@@ -25,9 +25,9 @@ ios, returning         1 210   1 249
 total                  4 070   4 538
 
 Step 1. Events vs billing, Wednesday
-  web      billing  1 899  with event  1 899  dup 0  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
-  android  billing  1 201  with event  1 201  dup 0  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
-  ios      billing  1 438  with event  1 035  dup 0  gap day  28.0%  before 06:00   0.0%  from 06:00  30.4%
+  web      billing  1 899  with event  1 899  without    0  dup 0  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
+  android  billing  1 201  with event  1 201  without    0  dup 0  gap day   0.0%  before 06:00   0.0%  from 06:00   0.0%
+  ios      billing  1 438  with event  1 035  without  403  dup 0  gap day  28.0%  before 06:00   0.0%  from 06:00  30.4%
   ios by app version, Wednesday:
     5.1: billing 112  events 112  gap 0.0%
     5.2: billing 1 326  events 923  gap 30.4%

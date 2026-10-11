@@ -24,6 +24,8 @@ SELECT b.platform,
        substr(b.paid_at, 1, 13)                        AS hour,
        count(DISTINCT b.order_id)                      AS orders_billing,
        count(DISTINCT e.order_id)                      AS orders_with_event,
+       count(DISTINCT b.order_id)
+         - count(DISTINCT e.order_id)                  AS orders_without_event,
        count(e.order_id) - count(DISTINCT e.order_id)  AS duplicate_events,
        round(1 - count(DISTINCT e.order_id) * 1.0
                  / count(DISTINCT b.order_id), 3)      AS gap
@@ -122,10 +124,11 @@ def reconcile(db):
         ev = sum(r[3] for r in mine)
         before = [r for r in mine if int(r[1][-2:]) < 6]
         after = [r for r in mine if int(r[1][-2:]) >= 6]
-        dup = sum(r[4] for r in mine)
+        lost = sum(r[4] for r in mine)
+        dup = sum(r[5] for r in mine)
         gb = 1 - sum(r[3] for r in before) / sum(r[2] for r in before)
         ga = 1 - sum(r[3] for r in after) / sum(r[2] for r in after)
-        print(f"  {p:<8} billing {num(bill):>6}  with event {num(ev):>6}  dup {dup}  "
+        print(f"  {p:<8} billing {num(bill):>6}  with event {num(ev):>6}  without {num(lost):>4}  dup {dup}  "
               f"gap day {(1 - ev / bill) * 100:5.1f}%  "
               f"before 06:00 {gb * 100:5.1f}%  from 06:00 {ga * 100:5.1f}%")
     print("  ios by app version, Wednesday:")
