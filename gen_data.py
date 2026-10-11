@@ -35,10 +35,19 @@ SEGMENTS = {
     },
 }
 
-# sessions by traffic source (UTM), totals match SEGMENTS
+# sessions by platform and traffic source; per-platform totals match SEGMENTS.
+# Web uses UTM tags, app sessions rely on install attribution (Universal Links / App Links).
 SOURCES = {
-    "tue": {"direct": 45000, "search": 40000, "other": 25000, "telegram": 0},
-    "wed": {"direct": 45500, "search": 40300, "other": 25200, "telegram": 19000},
+    "tue": {
+        "web": {"direct": 20000, "search": 20000, "other": 10000, "telegram": 0},
+        "android": {"direct": 12000, "search": 10000, "other": 8000, "telegram": 0},
+        "ios": {"direct": 13000, "search": 10000, "other": 7000, "telegram": 0},
+    },
+    "wed": {
+        "web": {"direct": 20300, "search": 20200, "other": 10000, "telegram": 11000},
+        "android": {"direct": 12100, "search": 10000, "other": 8100, "telegram": 7000},
+        "ios": {"direct": 13100, "search": 10100, "other": 7100, "telegram": 1000},
+    },
 }
 
 # orders on iOS 5.2 that never reach analytics, per user type
@@ -84,9 +93,15 @@ def build():
             orders.append([order_id, paid_at, platform, version, user_type])
             if i not in lost:
                 events.append([order_id, paid_at, platform, user_type])
-    by_source = [[DAYS[d], src, n] for d in DAYS for src, n in SOURCES[d].items()]
+    by_source = [[DAYS[d], p, src, n] for d in DAYS
+                 for p, srcs in SOURCES[d].items() for src, n in srcs.items()]
+    for d in DAYS:
+        for p in SOURCES[d]:
+            total = sum(SEGMENTS[d][(p, u)][0] for u in ("new", "returning"))
+            assert sum(SOURCES[d][p].values()) == total, (d, p)
     return {
-        "sessions_by_source.csv": (["date", "source", "sessions"], by_source),
+        "sessions_by_source.csv": (["date", "platform", "source", "sessions"],
+                                   by_source),
         "sessions.csv": (["date", "platform", "user_type", "sessions"], sessions),
         "billing_orders.csv": (["order_id", "paid_at", "platform", "app_version",
                                 "user_type"], orders),

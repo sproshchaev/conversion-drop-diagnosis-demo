@@ -36,11 +36,15 @@ Step 2. Honest conversion on billing orders
   tue 3.70%  wed 3.49%  change -5.7%
   sessions +18.2%  billing orders +11.5%
   share of new users 34.5% -> 43.8%
-  sessions by source (UTM):
-    direct    tue  45 000  wed  45 500  delta     500
-    search    tue  40 000  wed  40 300  delta     300
-    other     tue  25 000  wed  25 200  delta     200
-    telegram  tue       0  wed  19 000  delta  19 000
+  purchase events +1.6%
+  new       CR by events 1.61% -> 1.59%   CR by billing 1.61% -> 1.68%
+  returning CR by events 4.81% -> 4.43%   CR by billing 4.81% -> 4.91%
+  sessions by source (web: UTM, apps: install attribution):
+    source          web   android       ios     total
+    direct          300       100       100       500   (wed minus tue)
+    search          200         0       100       300   (wed minus tue)
+    other             0       100       100       200   (wed minus tue)
+    telegram     11 000     7 000     1 000    19 000   (wed minus tue)
 
 Step 3. Where the -0.52 pp came from
   dashboard           3.70% -> 3.18%  -0.52 pp

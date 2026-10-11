@@ -146,13 +146,22 @@ def honest(c, db):
     n1 = agg(c, TUE, user_types=["new"])[0] / s1
     n2 = agg(c, WED, user_types=["new"])[0] / s2
     print(f"  share of new users {n1 * 100:.1f}% -> {n2 * 100:.1f}%")
-    print("  sessions by source (UTM):")
+    print(f"  purchase events {(e2 / e1 - 1) * 100:+.1f}%")
+    for u in USER_TYPES:
+        st, et, bt = agg(c, TUE, user_types=[u])
+        sw, ew, bw = agg(c, WED, user_types=[u])
+        print(f"  {u:<9} CR by events {pct(et / st)} -> {pct(ew / sw)}   "
+              f"CR by billing {pct(bt / st)} -> {pct(bw / sw)}")
+    print("  sessions by source (web: UTM, apps: install attribution):")
     src = {}
-    for d, s, n in db.execute("SELECT date, source, sessions FROM sessions_by_source"):
-        src.setdefault(s, {})[d] = int(n)
-    for s, v in src.items():
-        print(f"    {s:<9} tue {num(v[TUE]):>7}  wed {num(v[WED]):>7}  "
-              f"delta {num(v[WED] - v[TUE]):>7}")
+    for d, p, s, n in db.execute(
+            "SELECT date, platform, source, sessions FROM sessions_by_source"):
+        src.setdefault(s, {}).setdefault(p, {})[d] = int(n)
+    print(f"    {'source':<9}" + "".join(f"{p:>10}" for p in PLATFORMS) + f"{'total':>10}")
+    for s, by_p in src.items():
+        deltas = [by_p[p][WED] - by_p[p][TUE] for p in PLATFORMS]
+        print(f"    {s:<9}" + "".join(f"{num(x):>10}" for x in deltas)
+              + f"{num(sum(deltas)):>10}   (wed minus tue)")
 
 
 def decompose(c):
