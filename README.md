@@ -127,8 +127,8 @@ cd conversion-drop-diagnosis-demo
 
 ## Источники
 
-- Daniil Maximkin, 67 Days of Zero Purchases in GA4, and Nobody Noticed (август 2026):
-  https://taskfordaniel.com/cases/67-days-zero-purchases-ga4/
+- Shopify, Order status script tags:
+  https://shopify.dev/docs/apps/build/online-store/script-tag-deprecation/order-status
 
 ## Лицензия
 
