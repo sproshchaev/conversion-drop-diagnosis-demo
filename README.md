@@ -3,6 +3,14 @@
 [![check](https://github.com/sproshchaev/conversion-drop-diagnosis-demo/actions/workflows/check.yml/badge.svg)](https://github.com/sproshchaev/conversion-drop-diagnosis-demo/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+**Сергей Прощаев**
+
+[![Website](https://img.shields.io/badge/prosoft.pages.dev-blue?logo=googlechrome&logoColor=white)](https://prosoft.pages.dev)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-sproshchaev-0A66C2)](https://www.linkedin.com/in/sproshchaev/)
+[![Habr](https://img.shields.io/badge/Habr-sproshchaev-65A3BE?logo=habr&logoColor=white)](https://habr.com/ru/users/sproshchaev/)
+
+---
+
 Учебная задача к статье на Хабре
 «[Конверсия упала на 14% за ночь. Найдите причину за 20 минут](https://habr.com/ru/companies/otus/articles/1088882/)».
 
